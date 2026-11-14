@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>打字小達人｜老師設定說明</title>
+<style>
+:root{color-scheme:light;--tx:#4a3f5c;--mu:#8d82a0;--pri:#ff7eb6;--pri2:#e0539a}
+body{margin:0;color:var(--tx);min-height:100vh;background:linear-gradient(160deg,#fff4d6,#ffe3f1) fixed;font:17px/1.7 "Yuanti TC","Hiragino Maru Gothic ProN","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+main{max-width:800px;margin:0 auto;padding:20px 16px}
+h1{font-size:28px;margin:4px 0;color:var(--pri2);text-shadow:2px 2px 0 #fff}
+.card{background:#fff;border:4px solid #fff;border-radius:26px;padding:16px 20px;margin:14px 0;box-shadow:0 6px 0 rgba(224,83,154,.15)}
+h2{font-size:20px;color:var(--pri2);margin:0 0 6px}
+ol{margin:6px 0 0 20px;padding:0}li{margin:6px 0}
+button{font:inherit;font-weight:700;border:3px solid #fff;background:#fff;color:var(--pri2);border-radius:999px;padding:6px 18px;cursor:pointer;box-shadow:0 4px 0 rgba(224,83,154,.25)}
+button.p{background:linear-gradient(180deg,#ff9cc8,var(--pri));color:#fff;box-shadow:0 4px 0 var(--pri2)}
+textarea,input{width:100%;box-sizing:border-box;font:14px/1.5 ui-monospace,Menlo,Consolas,monospace;padding:10px;border-radius:16px;border:3px dashed var(--pri);background:#fffafd;color:var(--tx)}
+textarea{height:230px}
+code{background:#fff1a8;padding:0 5px;border-radius:5px}
+.out{margin-top:10px;display:none}
+.out label{font-weight:700;display:block;margin-top:8px}
+.bad{color:#d33;font-weight:700}
+small{color:var(--mu)}
+</style>
+</head>
+<body>
+<main>
+<h1>🐣 打字小達人｜老師設定說明</h1>
+<p>學生的題目和進度會存在<b>你自己的 Google 帳號</b>裡，不會和其他老師混在一起。設定約 5 分鐘，只需要做一次。</p>
+
+<div class="card">
+<h2>步驟 1　建立後端</h2>
+<ol>
+<li>用你的 Google 帳號建立一份新的 <b>Google 試算表</b>（名稱例如「打字小達人」），按上方選單「擴充功能」→「Apps Script」。</li>
+<li>刪掉編輯器裡原有的程式碼。</li>
+<li>按下面的「複製程式碼」，貼進編輯器，按存檔。</li>
+</ol>
+<p style="margin:10px 0 6px"><button class="p" id="copyCode">複製程式碼</button> <small id="cmsg"></small></p>
+<textarea id="code" readonly>載入中…</textarea>
+</div>
+
+<div class="card">
+<h2>步驟 2　設定老師密碼</h2>
+<p>把第一行 <code>const PW = "請改成你的老師密碼";</code> 裡的文字改成你自己的密碼（學生猜不到的），再存檔。</p>
+</div>
+
+<div class="card">
+<h2>步驟 3　部署</h2>
+<ol>
+<li>右上角按「部署」→「新增部署作業」。</li>
+<li>按齒輪選「網頁應用程式」。</li>
+<li>「執行身分」選<b>我</b>；「誰可以存取」選<b>所有人</b>。</li>
+<li>按「部署」，依畫面授權（若出現「Google 尚未驗證這個應用程式」，點「進階」再點「前往…（不安全）」，這是你自己寫的程式）。</li>
+<li>複製畫面上的「網頁應用程式網址」，網址最後是 <code>/exec</code>。</li>
+</ol>
+</div>
+
+<div class="card">
+<h2>步驟 4　產生你的專屬連結</h2>
+<input id="url" placeholder="貼上網頁應用程式網址：https://script.google.com/macros/s/…/exec">
+<p style="margin:10px 0 0"><button class="p" id="gen">產生連結</button> <span id="err" class="bad"></span></p>
+<div class="out" id="out">
+<label>給學生的連結（貼到班級群組）</label>
+<input id="sl" readonly><p style="margin:6px 0 0"><button data-c="sl">複製</button></p>
+<label>老師後台連結（自己收藏，不要給學生）</label>
+<input id="tl" readonly><p style="margin:6px 0 0"><button data-c="tl">複製</button></p>
+<p><small>老師連結打開後，按右上角「老師」，輸入步驟 2 的密碼即可編輯題目、查看全班進度。</small></p>
+</div>
+</div>
+
+<div class="card">
+<h2>步驟 5　在試算表輸入題目（選用）</h2>
+<p>第一次有學生打開網頁後，試算表會自動出現三個分頁：「題目」「學生紀錄」。（也可以自己先建立「題目」分頁。）在「題目」分頁輸入段落：</p>
+<ol>
+<li><b>A 欄 級別</b>：1 到 10。</li>
+<li><b>B 欄 文字內容</b>：要打的句子或段落，建議 300 字以內。</li>
+<li><b>C 欄 模式</b>：填「取代」或「加入」。某一級只要有一列「取代」，該級就只用試算表的段落；只有「加入」時，會和內建段落（老師後台儲存的那一段）一起隨機抽取。</li>
+<li><b>D 欄 啟用</b>：填 N 表示暫時不用，空白或 Y 表示使用。</li>
+</ol>
+<p><small>改了試算表後，約 1 分鐘內學生重新整理頁面就會看到新題目。「學生紀錄」分頁會記下每位學生每次練習的時間、班別、姓名、級別、用時、速度、正確率和是否過關，可以直接篩選或另存成報表。</small></p>
+</div>
+
+<div class="card">
+<h2>常見問題</h2>
+<ol>
+<li><b>學生要輸入什麼？</b>班別（如 5A、4D、6C）和名字，不需要登入。同班同名的學生請在名字後加座號，例如「陳大文3」。</li>
+<li><b>無法連線或密碼錯誤？</b>確認部署時「誰可以存取」選了「所有人」，且密碼和 Code.gs 第一行一致。</li>
+<li><b>修改了 Code.gs 之後沒有變化？</b>要到「部署」→「管理部署作業」→編輯→版本選「新版本」→部署。網址不會改變。</li>
+<li><b>學生資料在哪？</b>在你的 Google 帳號的 Apps Script 專案裡，只有你能管理。請不要把 /exec 網址公開貼在網路上。</li>
+</ol>
+</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+fetch("Code.gs").then(r=>r.text()).then(t=>$("code").value=t).catch(()=>$("code").value="無法載入程式碼。請透過網站網址開啟本頁，或直接下載資料夾裡的 Code.gs。");
+async function copy(t,msgEl){try{await navigator.clipboard.writeText(t);if(msgEl){msgEl.textContent="✔ 已複製";setTimeout(()=>msgEl.textContent="",2000)}}catch(e){if(msgEl)msgEl.textContent="請手動選取後複製"}}
+$("copyCode").onclick=()=>copy($("code").value,$("cmsg"));
+const GAS=/^https:\/\/script\.google\.com\/(a\/[\w.-]+\/)?macros\/s\/[\w-]+\/exec$/;
+$("gen").onclick=()=>{
+  const u=$("url").value.trim();
+  if(!GAS.test(u)){$("err").textContent="網址格式不對，應該以 https://script.google.com/macros/s/ 開頭、/exec 結尾";$("out").style.display="none";return}
+  $("err").textContent="";
+  const base=new URL("index.html",location.href).href+"?api="+encodeURIComponent(u);
+  $("sl").value=base;$("tl").value=base+"#teacher";$("out").style.display="block";
+};
+document.querySelectorAll("button[data-c]").forEach(b=>b.onclick=()=>copy($(b.dataset.c).value,b));
+</script>
+</body>
+</html>

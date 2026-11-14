@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>老師小工具箱</title>
+<style>
+:root{color-scheme:light;--tx:#4a3f5c;--mu:#8d82a0;--pri:#ff7eb6;--pri2:#e0539a}
+body{margin:0;color:var(--tx);min-height:100vh;background:linear-gradient(160deg,#fff4d6,#ffe3f1) fixed;font:17px/1.6 "Yuanti TC","Hiragino Maru Gothic ProN","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+main{max-width:900px;margin:0 auto;padding:24px 16px}
+h1{font-size:32px;margin:6px 0;color:var(--pri2);text-shadow:2px 2px 0 #fff}
+.sub{color:var(--mu);margin:0 0 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:#fff;border:4px solid #fff;border-radius:28px;padding:18px;box-shadow:0 6px 0 rgba(224,83,154,.15)}
+.ic{font-size:46px;line-height:1.2}
+.card h2{margin:4px 0;font-size:21px;color:var(--pri2)}
+.tag{display:inline-block;font-size:12px;background:#ffe08a;border-radius:999px;padding:0 10px;margin-bottom:6px}
+.card p{margin:4px 0 12px;color:var(--tx);font-size:15px}
+a.btn{display:inline-block;text-decoration:none;font-weight:700;border-radius:999px;padding:6px 16px;margin:0 6px 6px 0;background:#fff;color:var(--pri2);border:3px solid #ffd3e6}
+a.btn.p{background:linear-gradient(180deg,#ff9cc8,var(--pri));color:#fff;border-color:#fff;box-shadow:0 3px 0 var(--pri2)}
+.foot{margin-top:28px;color:var(--mu);font-size:14px;text-align:center}
+</style>
+</head>
+<body>
+<main>
+<h1>🧰 老師小工具箱</h1>
+<p class="sub">免費的課堂小工具，老師自己設定，學生不用登入。</p>
+<div class="grid" id="grid">載入中…</div>
+<div class="foot">每個工具都附有設定說明，約 5 分鐘即可完成。<br>授權：<a href="https://creativecommons.org/licenses/by-nc/4.0/" style="color:inherit">CC BY-NC 4.0</a>，可自由使用與修改，需標示出處，不得商用。</div>
+</main>
+<script>
+fetch("tools.json").then(r=>r.json()).then(list=>{
+  const g=document.getElementById("grid");g.textContent="";
+  list.forEach(t=>{
+    const c=document.createElement("div");c.className="card";
+    const ic=document.createElement("div");ic.className="ic";ic.textContent=t.icon||"🧩";
+    const h=document.createElement("h2");h.textContent=t.name;
+    const p=document.createElement("p");p.textContent=t.desc;
+    c.append(ic,h);
+    if(t.tag){const g2=document.createElement("span");g2.className="tag";g2.textContent=t.tag;c.append(g2)}
+    c.append(p);
+    if(t.guide){const a=document.createElement("a");a.className="btn p";a.href=t.guide;a.textContent="設定說明（老師）";c.append(a)}
+    const b=document.createElement("a");b.className="btn";b.href=t.url;b.textContent="先試玩";c.append(b);
+    g.append(c);
+  });
+}).catch(()=>{document.getElementById("grid").textContent="無法載入工具清單。請透過網站網址開啟，不要直接雙擊檔案。"});
+</script>
+</body>
+</html>

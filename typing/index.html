@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>打字闖關</title>
+<style>
+:root{color-scheme:light;--bg1:#fff4d6;--bg2:#ffe3f1;--card:#fff;--tx:#4a3f5c;--mu:#8d82a0;--pri:#ff7eb6;--pri2:#e0539a;--ok:#1fae70;--bad:#ff6b6b;--bd:#ffd3e6;--lock:#e6e2ee}
+*{-webkit-tap-highlight-color:transparent}
+body{margin:0;color:var(--tx);min-height:100vh;background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;font:17px/1.6 "Yuanti TC","Hiragino Maru Gothic ProN","Chalkboard SE","Comic Sans MS","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+main{max-width:780px;margin:0 auto;padding:16px}
+h1{font-size:28px;margin:4px 0;color:var(--pri2);text-shadow:2px 2px 0 #fff}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+button{font:inherit;font-weight:700;border:3px solid #fff;background:#fff;color:var(--pri2);border-radius:999px;padding:8px 18px;cursor:pointer;box-shadow:0 4px 0 rgba(224,83,154,.25);transition:transform .1s}
+button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(224,83,154,.25)}
+button.p{background:linear-gradient(180deg,#ff9cc8,var(--pri));color:#fff;box-shadow:0 4px 0 var(--pri2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:14px;margin:16px 0}
+.lv{--c:#ffc2d6;position:relative;padding:14px 8px 12px;border-radius:26px;background:var(--c);border:4px solid #fff;text-align:center;cursor:pointer;box-shadow:0 6px 0 rgba(0,0,0,.08);transition:transform .15s}
+.lv:nth-child(5n+2){--c:#ffe08a}.lv:nth-child(5n+3){--c:#b8ecc9}.lv:nth-child(5n+4){--c:#bde3ff}.lv:nth-child(5n+5){--c:#e0cbff}
+.lv:hover{transform:translateY(-4px) rotate(-1.5deg)}
+.lv .ani{font-size:44px;line-height:1.2}
+.lv b{display:block;font-size:19px}
+.lv small{color:#6f6480;font-size:13px}
+.lv .star{position:absolute;top:-10px;right:-6px;font-size:26px;filter:drop-shadow(0 2px 0 rgba(0,0,0,.12))}
+.lv.lock{background:var(--lock);cursor:not-allowed;color:var(--mu)}.lv.lock:hover{transform:none}.lv.lock .ani{filter:grayscale(1)}
+.lv.now{animation:bob 1.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.card{background:var(--card);border:4px solid #fff;border-radius:28px;padding:18px;margin:14px 0;box-shadow:0 6px 0 rgba(224,83,154,.15)}
+#mas{font-size:34px;vertical-align:middle}
+#ptitle{font-size:22px;color:var(--pri2)}
+#target{font-size:30px;line-height:2.1;word-break:break-all;letter-spacing:2px;margin-top:6px}
+#target span.c{color:var(--ok);background:#d9f7e8;border-radius:6px}
+#target span.w{color:#fff;background:var(--bad);border-radius:6px}
+#target span.n{background:#fff1a8;border-bottom:4px solid #ffb300;border-radius:6px;animation:blink 1s infinite}
+@keyframes blink{50%{background:#ffe066}}
+textarea,input{width:100%;box-sizing:border-box;font:inherit;padding:12px 14px;border-radius:20px;border:3px dashed var(--pri);background:#fffafd;color:var(--tx)}
+textarea{min-height:120px;font-size:24px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.stats span{background:#fff;border-radius:999px;padding:4px 16px;border:3px solid var(--bd)}
+.stats b{color:var(--pri2);font-size:20px}
+.res{font-size:22px;line-height:1.8}.ok{color:var(--ok);font-weight:700}.bad{color:var(--bad);font-weight:700}
+.bar{height:22px;background:#fff;border-radius:999px;overflow:hidden;border:3px solid #fff;box-shadow:inset 0 2px 4px rgba(0,0,0,.1);position:relative}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb347,#ff7eb6);border-radius:999px;transition:width .6s}
+.bar em{position:absolute;inset:0;text-align:center;font-size:13px;font-style:normal;line-height:16px;color:#6f4a5e;font-weight:700}
+.hello{font-size:19px;margin:6px 0 10px}
+.row{display:grid;grid-template-columns:1fr 110px 110px;gap:8px;margin-top:6px}
+label{font-size:14px;color:var(--mu)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.tabs button{padding:4px 14px}.tabs button.on{background:var(--pri);color:#fff}
+.hide{display:none}
+.row2{display:flex;gap:10px;flex-wrap:wrap}.row2 input{width:auto;flex:1;min-width:140px}
+#play .card,#target{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.srow{display:grid;grid-template-columns:1fr 1.4fr 1.2fr auto;gap:8px;padding:8px 0;border-top:2px dotted var(--bd);align-items:center}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px;margin-top:10px}
+.slot{background:#fff7fb;border:3px dashed var(--bd);border-radius:20px;text-align:center;padding:8px 2px;font-size:12px;color:var(--mu)}
+.slot i{display:block;font-style:normal;font-size:34px;line-height:1.3}
+.slot.got{background:#fff;border:3px solid #ffe08a;color:var(--tx);animation:pop .5s}
+.slot:not(.got) i{filter:grayscale(1);opacity:.45}
+@keyframes pop{0%{transform:scale(.3)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+.ov{position:fixed;inset:0;background:rgba(74,63,92,.55);display:flex;align-items:center;justify-content:center;z-index:20;padding:20px}
+.gbox{background:#fff;border-radius:34px;border:6px solid #ffe08a;padding:26px 30px;text-align:center;max-width:320px;animation:pop .6s}
+.gbox .big{font-size:96px;line-height:1.1;animation:bob 1.2s ease-in-out infinite}
+.gbox h2{margin:6px 0;color:var(--pri2)}
+.chip{display:inline-block;background:#fff;border:3px solid #ffe08a;border-radius:999px;padding:2px 16px;font-weight:700;color:var(--pri2);cursor:pointer;box-shadow:0 3px 0 rgba(255,179,0,.3)}
+.conf{position:fixed;top:-40px;font-size:30px;pointer-events:none;z-index:9;animation:fall 2.6s linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
+</style>
+</head>
+<body>
+<main>
+<div class="top"><h1>🐣 打字小達人</h1><div><button id="tBtn" class="hide">👩‍🏫 老師</button> <button id="homeBtn" class="hide">🗺️ 關卡</button></div></div>
+
+<section id="name" class="hide">
+  <div class="card">
+    <b style="font-size:24px;color:var(--pri2)">🐥 嗨！你叫什麼名字呢？</b>
+    <p style="color:var(--mu);margin:4px 0">請輸入班別（例如 5A、4D、6C）和你的名字。換電腦時輸入同樣的班別和名字，進度就會接上。</p>
+    <div id="noapi" class="bad hide" style="font-size:16px;margin:6px 0">⚠️ 找不到老師的設定，進度只會存在這台電腦。請向老師索取正確的連結。</div>
+    <div class="row2"><input id="clsInp" maxlength="2" autocomplete="off" placeholder="班別（如 5A）" style="max-width:160px;text-transform:uppercase"><input id="nameInp" maxlength="20" autocomplete="off" placeholder="你的名字"></div>
+    <div id="nerr" class="bad hide" style="font-size:16px;margin-top:6px"></div>
+    <div style="margin-top:10px"><button class="p" id="nameOk">開始冒險 🚀</button></div>
+  </div>
+</section>
+
+<section id="home" class="hide">
+  <div class="hello">🐣 <span id="hi"></span> <button id="switch" style="padding:2px 12px;font-size:14px">換人</button></div><div style="margin:8px 0"><span class="chip" id="gc"></span></div><div class="bar"><i id="bar"></i><em id="barT"></em></div>
+  <div class="grid" id="grid"></div>
+  <div class="card"><b style="font-size:20px;color:var(--pri2)">🎁 我的禮物櫃</b> <small style="color:var(--mu)">每過一關，就能得到一個小禮物！</small><div class="shelf" id="shelf"></div></div>
+</section>
+
+<section id="play" class="hide">
+  <div class="card"><span id="mas">🐣</span> <b id="ptitle"></b> <span style="color:var(--mu)" id="preq"></span><div id="target"></div></div>
+  <textarea id="inp" placeholder="✏️ 看著上面的字，在這裡打打看～" autocomplete="off" spellcheck="false"></textarea>
+  <div id="warn" class="bad hide" style="font-size:19px;margin-top:8px">🙅 不可以複製貼上喔！要自己動手打，才會越來越厲害～</div>
+  <div class="stats"><span>用時：<b id="st">0</b> 秒</span><span>速度：<b id="sc">0</b> 字/分</span><span>正確率：<b id="sa">100</b>%</span></div>
+  <div class="card hide" id="result"><div class="res" id="rtext"></div><div style="margin-top:10px"><button id="retry">🔄 再試一次</button> <button id="next" class="p hide">下一關 ➡️</button></div></div>
+</section>
+
+<section id="admin" class="hide">
+  <div class="card">
+    <b>老師後台</b> <button id="tOut" style="padding:2px 12px;font-size:14px">離開老師模式</button>
+    <p style="color:var(--mu);margin:4px 0">為每一級輸入練習文字，並設定過關的正確率與速度。儲存後學生重新整理頁面即可看到。</p>
+    <div class="tabs" id="tabs"></div>
+    <label>第 <span id="alv"></span> 級「內建」練習文字（也可以在 Google 試算表的「題目」分頁加入或取代）</label>
+    <textarea id="atext"></textarea>
+    <div class="row"><div></div><label>正確率 %<input id="aacc" type="number" min="0" max="100"></label><label>字/分<input id="acpm" type="number" min="0" max="500"></label></div>
+    <div style="margin-top:10px"><button class="p" id="save">儲存本級</button> <button id="reset">還原預設</button> <span id="amsg" style="color:var(--ok)"></span></div>
+  </div>
+  <div class="card"><b>學生進度</b> <button id="refresh" style="padding:2px 10px">重新整理</button> <select id="clsF" style="width:auto;display:inline-block;padding:2px 10px"><option value="">全部班別</option></select><div id="stu" style="margin-top:8px"></div></div>
+</section>
+</main>
+<script>
+// 後端網址由老師的專屬連結（?api=...）提供，只接受 Google Apps Script 網址
+const EXPECT="1.1";
+const GAS=/^https:\/\/script\.google\.com\/(a\/[\w.-]+\/)?macros\/s\/[\w-]+\/exec$/;
+const API=(()=>{try{
+  const a=new URLSearchParams(location.search).get("api");
+  if(a&&GAS.test(a)){localStorage.setItem("tapi",a);return a}
+  const t=localStorage.getItem("tapi");return GAS.test(t||"")?t:"";
+}catch(e){return ""}})();
+
+const DEF=[
+["天天向上，好好學習。",70,10],
+["我愛我的學校，我愛我的老師。",75,12],
+["今天天氣很好，我們一起去公園玩。",80,15],
+["小白兔蹦蹦跳跳，跑過綠色的草地。",80,20],
+["讀書是一件快樂的事，書中有許多有趣的故事。",85,22],
+["熟能生巧，只要每天用心練習，打字就會越來越快。",85,25],
+["春眠不覺曉，處處聞啼鳥。夜來風雨聲，花落知多少。",90,28],
+["打字是一項重要的本領，一開始先求正確，再慢慢加快速度。",90,32],
+["學而時習之，不亦說乎？有朋自遠方來，不亦樂乎？人不知而不慍，不亦君子乎？",93,36],
+["恭喜你來到最後一關！只要細心、專心，又持之以恆，就能成為打字高手。",95,40]
+].map(a=>({text:a[0],acc:a[1],cpm:a[2]}));
+const $=id=>document.getElementById(id);
+let PS={},lastPick={},levels=DEF.map(x=>({...x})),unlocked=1,cur=0,me="",pw="",editIdx=0;
+
+function show(n){["name","home","play","admin"].forEach(s=>$(s).classList.toggle("hide",s!==n));$("homeBtn").classList.toggle("hide",n==="home"||n==="name");}
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}return null}
+async function api(b){
+  if(!API)throw new Error("no api");
+  const r=await fetch(API,{method:"POST",body:JSON.stringify(b)});
+  return r.json();
+}
+
+const ANI=["🐣","🐰","🐱","🐶","🐼","🦊","🦁","🐯","🦄","🐲"];
+const GIFTS=[["🍭","棒棒糖"],["🧸","小熊"],["🎈","氣球"],["🍩","甜甜圈"],["🎨","調色盤"],["🚀","火箭"],["🏅","金牌"],["👑","皇冠"],["🎀","蝴蝶結"],["🏆","冠軍獎盃"]];
+function goShelf(){clearInterval(timer);renderGrid();show("home");setTimeout(()=>$("shelf").scrollIntoView({behavior:"smooth",block:"center"}),60)}
+function giftBox(i,head,msg,fresh){
+  const g=GIFTS[i],o=document.createElement("div");o.className="ov";
+  o.innerHTML='<div class="gbox"><div style="font-size:20px">'+head+'</div><div class="big">'+g[0]+'</div><h2>'+g[1]+'</h2><div style="color:var(--mu);margin-bottom:12px">'+msg+'</div><button class="p b1"></button> <button class="b2">先關閉</button></div>';
+  const b1=o.querySelector(".b1"),b2=o.querySelector(".b2");
+  b1.textContent=fresh?"去看禮物櫃 💖":"好棒！";
+  b1.onclick=()=>{o.remove();if(fresh)goShelf()};
+  b2.onclick=()=>o.remove();
+  if(!fresh)b2.classList.add("hide");
+  document.body.appendChild(o);
+}
+function giftPop(i){setTimeout(()=>giftBox(i,"🎁 恭喜你得到小禮物！","已收進「我的禮物櫃」",true),700)}
+const PRAISE=["太棒了，過關囉！","你好厲害！","哇～打得真好！","滿分小天才！","繼續加油，你最棒！"];
+function confetti(){
+  const E=["🎉","⭐","🌟","🎈","🍬","🌈","✨"];
+  for(let i=0;i<28;i++){const e=document.createElement("div");e.className="conf";e.textContent=E[i%E.length];
+    e.style.left=Math.random()*100+"vw";e.style.animationDelay=Math.random()*.8+"s";document.body.appendChild(e);
+    setTimeout(()=>e.remove(),3600)}
+}
+function renderGrid(){
+  const done=Math.min(unlocked-1,10);
+  $("hi").textContent=me+" 小朋友，你好！已經通過 "+done+" 關囉～";
+  $("bar").style.width=done*10+"%";
+  $("gc").textContent="🎁 已收集 "+done+" / 10";$("gc").onclick=()=>$("shelf").scrollIntoView({behavior:"smooth",block:"center"});$("barT").textContent=done+" / 10";
+  $("shelf").innerHTML=GIFTS.map((g,i)=>'<div class="slot'+(i<done?" got":"")+'"><i>'+g[0]+'</i>'+(i<done?g[1]:"第 "+(i+1)+" 關")+'</div>').join("");
+  [...$("shelf").children].forEach((el,i)=>{el.style.cursor="pointer";el.onclick=()=>{
+    if(i<done)giftBox(i,"🎁 我的禮物","這是你通過第 "+(i+1)+" 關得到的"+GIFTS[i][1]+"！",false);
+    else{const r=levels[i];giftBox(i,"🔒 還沒拿到喔","通過第 "+(i+1)+" 關就能得到它！",false)}}});
+  $("grid").innerHTML="";
+  levels.forEach((l,i)=>{
+    const d=document.createElement("div"),ok=i<unlocked;
+    d.className="lv"+(ok?"":" lock")+(i===unlocked-1?" now":"");
+    d.innerHTML='<div class="ani">'+(ok?ANI[i]:"🔒")+'</div><b>第 '+(i+1)+' 關</b><small>'+l.acc+'% · '+l.cpm+' 字/分</small>'+(i<unlocked-1?'<span class="star">⭐</span>':"");
+    if(ok)d.onclick=()=>start(i);
+    $("grid").appendChild(d);
+  });
+}
+
+let t0=0,fin=false,comp=false,timer=null,curText="";
+// 題目來源：試算表有「取代」就只用試算表；否則「內建（老師後台儲存的）」加上試算表的「加入」
+function pickText(i){
+  const rows=PS[i+1]||[];
+  let pool=rows.some(x=>x.r)?rows.map(x=>x.t):[levels[i].text].concat(rows.map(x=>x.t));
+  pool=[...new Set(pool)];
+  if(pool.length>1&&lastPick[i])pool=pool.filter(t=>t!==lastPick[i]);
+  const t=pool[Math.floor(Math.random()*pool.length)];lastPick[i]=t;return t;
+}
+function start(i){
+  cur=i;fin=false;t0=0;clearInterval(timer);curText=pickText(i);
+  const l=levels[i];
+  $("ptitle").textContent="第 "+(i+1)+" 關";
+  $("preq").textContent="過關：正確率 ≥ "+l.acc+"%，速度 ≥ "+l.cpm+" 字/分";
+  $("inp").value="";$("inp").disabled=false;$("result").classList.add("hide");
+  $("st").textContent=0;$("mas").textContent="🐣";$("sc").textContent=0;$("sa").textContent=100;
+  paint();show("play");$("inp").focus();
+}
+const target=()=>curText.replace(/\s+$/,"");
+function esc(c){return c==="<"?"&lt;":c==="&"?"&amp;":c}
+function paint(){
+  const T=[...target()],V=[...$("inp").value];
+  $("target").innerHTML=T.map((c,i)=>'<span class="'+(i<V.length?(V[i]===c?"c":"w"):(i===V.length?"n":""))+'">'+esc(c)+"</span>").join("");
+}
+function upd(){if(comp)return;
+  const T=[...target()],V=[...$("inp").value];let ok=0;V.forEach((c,i)=>{if(T[i]===c)ok++});
+  const sec=t0?(Date.now()-t0)/1000:0;
+  $("st").textContent=Math.round(sec);$("mas").textContent=V.length&&ok/V.length<.8?"🥺":"🐣";$("sc").textContent=sec>0?Math.round(ok/sec*60):0;$("sa").textContent=V.length?Math.round(ok/V.length*100):100;
+}
+function onInput(){
+  if(comp||fin)return;
+  if(!t0){t0=Date.now();timer=setInterval(upd,300)}
+  paint();upd();
+  if([...$("inp").value].length>=[...target()].length)finish();
+}
+function finish(){
+  fin=true;clearInterval(timer);$("inp").disabled=true;
+  const T=[...target()],V=[...$("inp").value];let ok=0;T.forEach((c,i)=>{if(V[i]===c)ok++});
+  const sec=Math.max((Date.now()-t0)/1000,1),acc=Math.round(ok/T.length*100),cpm=Math.round(ok/sec*60);
+  const l=levels[cur],pass=acc>=l.acc&&cpm>=l.cpm;
+  api({action:"log",name:me,level:cur+1,sec:Math.round(sec),cpm,acc,pass}).catch(()=>{});
+  let h="正確率 "+acc+"%、速度 "+cpm+" 字/分。<br>";
+  $("next").classList.add("hide");
+  if(pass){
+    h+='<span class="ok">🎉 '+PRAISE[Math.floor(Math.random()*PRAISE.length)]+'</span>';
+    if(cur+2>unlocked){unlocked=cur+2;saveProgress();giftPop(cur)}confetti();
+    if(cur<9)$("next").classList.remove("hide");else h+=" 🏆 你已經是打字小達人了！";
+  }else{
+    h+='<span class="bad">💪 差一點點，再加油！</span> '+(acc<l.acc?"正確率需達 "+l.acc+"%。":"")+(cpm<l.cpm?"速度需達 "+l.cpm+" 字/分。":"")+" 再試一次吧！";
+  }
+  $("rtext").innerHTML=h;$("result").classList.remove("hide");
+}
+$("inp").addEventListener("compositionstart",()=>comp=true);
+$("inp").addEventListener("compositionend",()=>{comp=false;onInput()});
+$("inp").addEventListener("input",onInput);
+let wt=null;
+function warn(){$("warn").classList.remove("hide");clearTimeout(wt);wt=setTimeout(()=>$("warn").classList.add("hide"),3000)}
+["paste","drop","cut","copy","contextmenu","dragstart"].forEach(ev=>$("inp").addEventListener(ev,e=>{e.preventDefault();if(ev==="paste"||ev==="drop")warn()}));
+$("inp").addEventListener("beforeinput",e=>{if(/^insertFrom(Paste|Drop|Yank)|^insertReplacementText/.test(e.inputType||"")){e.preventDefault();warn()}});
+["copy","cut","contextmenu","selectstart","dragstart"].forEach(ev=>$("target").addEventListener(ev,e=>e.preventDefault()));
+$("retry").onclick=()=>start(cur);
+$("next").onclick=()=>start(cur+1);
+$("homeBtn").onclick=()=>{clearInterval(timer);renderGrid();show("home")};
+
+function saveProgress(){
+  ls("tp:"+me,unlocked);
+  api({action:"setp",name:me,unlocked}).catch(()=>{});
+}
+async function enter(n){
+  me=n.trim();if(!me)return;
+  ls("tname",me);
+  unlocked=+ls("tp:"+me)||1;
+  try{const r=await api({action:"getp",name:me});if(r.p&&r.p.unlocked>unlocked)unlocked=r.p.unlocked}catch(e){}
+  saveProgress();renderGrid();show("home");
+}
+function nerr(m){$("nerr").textContent=m;$("nerr").classList.toggle("hide",!m)}
+function submitName(){
+  const c=$("clsInp").value.trim().toUpperCase(),n=$("nameInp").value.trim().replace(/\s+/g," ");
+  if(!/^[1-6][A-Z]$/.test(c)){nerr("班別要寫成年級加英文字母，例如 5A、4D、6C");return}
+  if(!n||n.length>20){nerr("請輸入你的名字（最多 20 個字）");return}
+  nerr("");ls("tcls",c);enter(c+" "+n);
+}
+$("nameOk").onclick=submitName;
+["clsInp","nameInp"].forEach(id=>$(id).onkeydown=e=>{if(e.key==="Enter")submitName()});
+$("switch").onclick=()=>{ls("tname","");$("nameInp").value="";$("clsInp").value=ls("tcls")||"";nerr("");show("name")};
+
+/* 老師後台 */
+function renderTabs(){
+  $("tabs").innerHTML="";
+  for(let i=0;i<10;i++){const b=document.createElement("button");b.textContent=i+1;b.className=i===editIdx?"on":"";b.onclick=()=>{editIdx=i;loadEdit()};$("tabs").appendChild(b)}
+}
+function loadEdit(){const l=levels[editIdx];$("alv").textContent=editIdx+1;$("atext").value=l.text;$("aacc").value=l.acc;$("acpm").value=l.cpm;$("amsg").textContent="";renderTabs()}
+$("tBtn").onclick=async()=>{
+  if(!pw){const p=prompt("請輸入老師密碼");if(!p)return;
+    try{const r=await api({action:"check",pw:p});if(!r.ok){alert("密碼錯誤");return}pw=p;if(r.version&&r.version!==EXPECT)alert("提醒：你的後端 Code.gs 版本（"+r.version+"）和網頁需要的版本（"+EXPECT+"）不同，請到設定說明頁面更新。")}catch(e){alert("無法連線到後端，請確認連結中有老師的後端網址（?api=...）");return}}
+  editIdx=0;loadEdit();show("admin");loadStudents();
+};
+$("save").onclick=async()=>{
+  const t=$("atext").value.trim();if(!t){$("amsg").textContent="請輸入文字";return}
+  levels[editIdx]={text:t,acc:Math.min(100,Math.max(0,+$("aacc").value||0)),cpm:Math.max(0,+$("acpm").value||0)};
+  try{const r=await api({action:"saveLevels",pw,levels});$("amsg").textContent=r.ok?"✔ 已儲存":"儲存失敗"}catch(e){$("amsg").textContent="儲存失敗"}
+};
+$("reset").onclick=()=>{levels[editIdx]={...DEF[editIdx]};loadEdit()};
+let lastList=[];
+function renderStu(){
+  const box=$("stu"),f=$("clsF").value;box.textContent="";
+  const L=lastList.filter(s=>!f||s.name.split(" ")[0]===f);
+  if(!L.length){box.textContent="尚無學生紀錄";return}
+  L.sort((a,b)=>b.unlocked-a.unlocked||a.name.localeCompare(b.name)).forEach(s=>{
+    const d=document.createElement("div");d.className="srow";
+    const a=document.createElement("span");a.textContent=s.name;
+    const b=document.createElement("span");b.textContent=s.unlocked>10?"✅ 已全部通關":"目前第 "+s.unlocked+" 關（已過 "+(s.unlocked-1)+" 關）";
+    const c=document.createElement("small");c.style.color="var(--mu)";c.textContent=s.t?new Date(s.t).toLocaleString("zh-TW"):"";
+    const x=document.createElement("button");x.textContent="刪除";x.style.padding="2px 8px";
+    x.onclick=async()=>{if(confirm("刪除 "+s.name+" 的紀錄？")){await api({action:"del",pw,name:s.name});loadStudents()}};
+    d.append(a,b,c,x);box.appendChild(d);
+  });
+}
+async function loadStudents(){
+  const box=$("stu");box.textContent="載入中…";
+  try{
+    const r=await api({action:"list",pw});lastList=r.list||[];
+    const cs=[...new Set(lastList.map(s=>s.name.split(" ")[0]))].filter(c=>/^[1-6][A-Z]$/.test(c)).sort();
+    const keep=$("clsF").value;
+    $("clsF").innerHTML='<option value="">全部班別</option>'+cs.map(c=>"<option>"+c+"</option>").join("");
+    if(cs.includes(keep))$("clsF").value=keep;
+    renderStu();
+  }catch(e){box.textContent="讀取失敗"}
+}
+$("clsF").onchange=renderStu;
+$("refresh").onclick=loadStudents;
+
+/* 老師按鈕預設隱藏：網址加 #teacher 開啟後，此瀏覽器會記住 */
+if(/teacher/i.test(location.search+location.hash))ls("tmode","1");
+if(ls("tmode")==="1")$("tBtn").classList.remove("hide");
+$("tOut").onclick=()=>{ls("tmode","");pw="";$("tBtn").classList.add("hide");renderGrid();show(me?"home":"name")};
+
+/* 啟動 */
+(async()=>{
+  try{const r=await api({action:"levels"});if(r.levels&&r.levels.length===10)levels=r.levels;PS=r.passages||{}}catch(e){}
+  if(!API)$("noapi").classList.remove("hide");
+  const n=ls("tname");
+  if(n&&/^[1-6][A-Z] \S/.test(n))enter(n);else{$("clsInp").value=ls("tcls")||"";show("name")}
+})();
+</script>
+</body>
+</html>
