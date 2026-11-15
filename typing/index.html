@@ -140,6 +140,7 @@ const API=(()=>{try{
 }catch(e){return ""}})();
 // 每位老師的後端網址不同：學生的暫存資料依後端網址分開存放，共用電腦上不同老師的學生不會混在一起
 const NS=(()=>{let h=0;for(const c of API)h=(h*31+c.charCodeAt(0))|0;return (h>>>0).toString(36)+":"})();
+const BID=((API.match(/\/s\/([\w-]+)\/exec$/)||[])[1]||"").slice(-6);
 
 const DEF=[
 ["天天向上，好好學習。",70,10],
@@ -332,7 +333,7 @@ function renderTabs(){
 function loadEdit(){const l=levels[editIdx];$("alv").textContent=editIdx+1;$("atext").value=l.text;$("aacc").value=l.acc;$("acpm").value=l.cpm;$("amsg").textContent="";renderTabs()}
 $("tBtn").onclick=async()=>{
   if(!pw){const p=prompt("請輸入老師密碼");if(!p)return;
-    try{const r=await api({action:"check",pw:p});if(!r.ok){alert("密碼錯誤");return}pw=p;if(r.version&&r.version!==EXPECT){
+    try{const r=await api({action:"check",pw:p});if(!r.ok){alert(r.def?"這個後端還沒有設定老師密碼。\n請在 Apps Script 的 Code.gs 第 3 行改成你自己的密碼，再用「新版本」重新部署。":"密碼錯誤。\n目前連線的後端代號：…"+BID+"\n請確認它和 Apps Script「管理部署作業」裡部署 ID 的結尾相同，並且改過密碼後已重新部署。");return}pw=p;if(r.version&&r.version!==EXPECT){
     const cmp=r.version.localeCompare(EXPECT,undefined,{numeric:true});
     alert(cmp<0?"提醒：你的後端 Code.gs 版本（"+r.version+"）比網頁（"+EXPECT+"）舊，請把新的 Code.gs 貼進 Apps Script，並用「新版本」重新部署。":"提醒：網頁版本（"+EXPECT+"）比你的後端（"+r.version+"）舊，請重新載入頁面；如果仍是這樣，請通知管理網站的人更新網頁檔案。")}}catch(e){alert("無法連線到後端，請確認連結中有老師的後端網址（?api=...）");return}}
   editIdx=0;loadEdit();show("admin");fillSet();loadStudents();loadErr();
@@ -340,7 +341,7 @@ $("tBtn").onclick=async()=>{
 $("save").onclick=async()=>{
   const t=$("atext").value.trim();if(!t){$("amsg").textContent="請輸入文字";return}
   levels[editIdx]={text:t,acc:Math.min(100,Math.max(0,+$("aacc").value||0)),cpm:Math.max(0,+$("acpm").value||0)};
-  try{const r=await api({action:"saveLevels",pw,levels});$("amsg").textContent=r.ok?"✔ 已儲存":"儲存失敗"}catch(e){$("amsg").textContent="儲存失敗"}
+  try{const r=await api({action:"saveLevels",pw,levels});$("amsg").textContent=r.ok?"✔ 已儲存":failMsg(r)}catch(e){$("amsg").textContent="儲存失敗"}
 };
 $("reset").onclick=()=>{levels[editIdx]={...DEF[editIdx]};loadEdit()};
 let lastList=[];
@@ -462,6 +463,7 @@ const TH={
   orange:{n:"橙色",bg1:"#fff1d6",bg2:"#ffe4d2",pri:"#ffa24c",pri2:"#e0701a",bd:"#ffd9b5"}
 };
 let SET={title:"",mascot:"🐣",theme:"pink"};
+function failMsg(r){return r&&r.error==="unknown"?"後端版本太舊，請更新 Code.gs 並用「新版本」重新部署":r&&r.error==="pw"?"密碼無效，請重新登入後台":"儲存失敗"}
 function applySettings(s){
   s=s||{};
   SET={title:String(s.title||"").slice(0,40),mascot:MASC.includes(s.mascot)?s.mascot:"🐣",theme:TH[s.theme]?s.theme:"pink"};
@@ -481,7 +483,7 @@ function fillSet(){
 $("sSave").onclick=async()=>{
   const v={title:$("sTitle").value.trim(),mascot:$("sMas").value,theme:$("sTheme").value};
   try{const r=await api({action:"saveSettings",pw,...v});
-    if(r.ok){applySettings(v);ls("set",JSON.stringify(v));$("sMsg").textContent="✔ 已儲存"}else $("sMsg").textContent="儲存失敗"}
+    if(r.ok){applySettings(v);ls("set",JSON.stringify(v));$("sMsg").textContent="✔ 已儲存"}else $("sMsg").textContent=failMsg(r)}
   catch(e){$("sMsg").textContent="儲存失敗"}
 };
 /*BRAND-END*/

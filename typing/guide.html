@@ -28,6 +28,19 @@ small{color:var(--mu)}
 <h1>🐣 打字小達人｜老師設定說明</h1>
 <p>學生的題目和進度會存在<b>你自己的 Google 帳號</b>裡，不會和其他老師混在一起。設定約 5 分鐘，只需要做一次。</p>
 
+<div class="card" id="easy" style="display:none">
+<h2>最簡單：用範本，約 3 分鐘</h2>
+<ol>
+<li>按下面的按鈕，在 Google 畫面按「建立副本」。<p style="margin:8px 0"><a id="copyLink" href="#" target="_blank" rel="noopener"><button class="p">建立我的副本</button></a></p></li>
+<li>副本打開後，上方選單會多出「<b>🐣 打字小達人</b>」（沒看到就重新整理頁面）。選「<b>① 基本設定</b>」，輸入老師稱呼和你的密碼。第一次會跳出授權畫面，請按「繼續」→「進階」→「前往…（不安全）」→「允許」，這是你自己的檔案，可以放心。</li>
+<li>上方選「擴充功能 → Apps Script」，按右上角「<b>部署 → 新增部署作業</b>」。按齒輪選「網頁應用程式」，<b>執行身分選「我」</b>，<b>誰可以存取選「所有人」</b>，按「部署」。</li>
+<li>回到試算表，選「<b>🐣 打字小達人 → ② 產生連結</b>」。「<b>我的連結</b>」分頁會出現「給學生的連結」和「老師後台連結」，直接複製使用。</li>
+</ol>
+<p><small>之後想換標題、吉祥物或顏色，用老師後台連結進去，在「🎨 個人化設定」修改。</small></p>
+</div>
+
+<details id="manual" open>
+<summary style="cursor:pointer;font-weight:700;color:var(--pri2);margin:14px 0 6px">進階：不用範本，自己貼程式碼（步驟 1 到 4）</summary>
 <div class="card">
 <h2>步驟 1　建立後端</h2>
 <ol>
@@ -68,6 +81,8 @@ small{color:var(--mu)}
 </div>
 </div>
 
+</details>
+
 <div class="card">
 <h2>步驟 5　在試算表輸入題目（選用）</h2>
 <p>第一次有學生打開網頁後，試算表會自動出現三個分頁：「題目」「學生紀錄」。（也可以自己先建立「題目」分頁。）在「題目」分頁輸入段落：</p>
@@ -86,12 +101,16 @@ small{color:var(--mu)}
 <li><b>學生要輸入什麼？</b>班別（如 5A、4D、6C）和名字，不需要登入。同班同名的學生請在名字後加座號，例如「陳大文3」。</li>
 <li><b>無法連線或密碼錯誤？</b>確認部署時「誰可以存取」選了「所有人」，且密碼和 Code.gs 第一行一致。</li>
 <li><b>修改了 Code.gs 之後沒有變化？</b>要到「部署」→「管理部署作業」→編輯→版本選「新版本」→部署。網址不會改變。</li>
+<li><b>怎麼讓學生認得這是我的班？</b>進老師後台，在「🎨 個人化設定」輸入標題（例如「陳老師的打字小達人」），選吉祥物和主題色，按儲存。學生畫面會立刻換成你的樣子。</li>
+<li><b>常錯字分析？</b>老師後台最下方會統計學生最常打錯的前 10 個字，並分成聲母、韻母、標點符號等類型；資料存在試算表的「錯字紀錄」分頁。</li>
 <li><b>學生資料在哪？</b>在你的 Google 帳號的 Apps Script 專案裡，只有你能管理。請不要把 /exec 網址公開貼在網路上。</li>
 </ol>
 </div>
 </main>
 <script>
+const TEMPLATE_COPY_URL = "";   // 管理者：建好範本後，把「…/copy」結尾的網址貼在這裡
 const $=id=>document.getElementById(id);
+if(TEMPLATE_COPY_URL){$("easy").style.display="block";$("copyLink").href=TEMPLATE_COPY_URL;$("manual").open=false}
 fetch("Code.gs").then(r=>r.text()).then(t=>$("code").value=t).catch(()=>$("code").value="無法載入程式碼。請透過網站網址開啟本頁，或直接下載資料夾裡的 Code.gs。");
 async function copy(t,msgEl){try{await navigator.clipboard.writeText(t);if(msgEl){msgEl.textContent="✔ 已複製";setTimeout(()=>msgEl.textContent="",2000)}}catch(e){if(msgEl)msgEl.textContent="請手動選取後複製"}}
 $("copyCode").onclick=()=>copy($("code").value,$("cmsg"));
