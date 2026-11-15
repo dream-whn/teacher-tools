@@ -1,7 +1,9 @@
 // 打字小達人 後端（Google Apps Script）
 // 請從你的 Google 試算表開啟：上方選單「擴充功能」→「Apps Script」，再貼上本程式碼。
-const PW = "請改成你的老師密碼";
-const VERSION = "1.3";
+const PW = "abc123";
+const VERSION = "1.4";
+const MASCOTS = ["🐣","🐰","🐱","🐶","🐼","🦊","🦁","🐯","🦄","🐲","🌟","🚀"];
+const THEMES = ["pink","blue","green","purple","orange"];
 const NAME_RE = /^[1-6][A-Z] \S.{0,19}$/;   // 例如「5A 陳大文」
 
 function out(o){ return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
@@ -58,11 +60,22 @@ function doPost(e){
 
   if (d.action === "levels") {
     const v = P.getProperty("levels");
-    return out({levels: v ? JSON.parse(v) : null, passages: passages_()});
+    const st = P.getProperty("settings");
+    return out({levels: v ? JSON.parse(v) : null, passages: passages_(), settings: st ? JSON.parse(st) : null});
   }
   if (d.action === "saveLevels") {
     if (!teacher) return out({error:"pw"});
     P.setProperty("levels", JSON.stringify(d.levels));
+    return out({ok:1});
+  }
+  if (d.action === "saveSettings") {              // 老師個人化：標題、吉祥物、主題色
+    if (!teacher) return out({error:"pw"});
+    const title = Array.from(String(d.title || "").trim()).slice(0, 20).join("");
+    P.setProperty("settings", JSON.stringify({
+      title: title,
+      mascot: MASCOTS.indexOf(d.mascot) >= 0 ? d.mascot : "🐣",
+      theme: THEMES.indexOf(d.theme) >= 0 ? d.theme : "pink"
+    }));
     return out({ok:1});
   }
   if (d.action === "check") return out({ok: teacher, version: VERSION});
