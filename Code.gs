@@ -1,6 +1,6 @@
 // 打字小達人 後端（Google Apps Script）
 // 請從你的 Google 試算表開啟：上方選單「擴充功能」→「Apps Script」，再貼上本程式碼。
-const PW = "老師自己設密碼";
+const PW = "請改成你的老師密碼";
 const VERSION = "1.4";
 const MASCOTS = ["🐣","🐰","🐱","🐶","🐼","🦊","🦁","🐯","🦄","🐲","🌟","🚀"];
 const THEMES = ["pink","blue","green","purple","orange"];
