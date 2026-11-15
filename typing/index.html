@@ -47,6 +47,13 @@ textarea{min-height:120px;font-size:24px}
 label{font-size:14px;color:var(--mu)}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.tabs button{padding:4px 14px}.tabs button.on{background:var(--pri);color:#fff}
 .hide{display:none}
+.catrow{display:grid;grid-template-columns:150px 1fr 90px;gap:8px;align-items:center;margin:4px 0}.catbar{height:16px;border-radius:999px;background:var(--bd);overflow:hidden}.catbar i{display:block;height:100%;background:linear-gradient(90deg,#ffb347,#ff7eb6)}
+.toprow{display:grid;grid-template-columns:44px 64px 70px 1fr 120px;gap:8px;align-items:center;padding:6px 0;border-top:2px dotted var(--bd)}.toprow .big{font-size:30px;line-height:1.2;font-weight:700;color:var(--pri2)}
+@media(max-width:560px){.catrow{grid-template-columns:110px 1fr 70px}.toprow{grid-template-columns:36px 50px 56px 1fr}.toprow .ty{display:none}}
+.tops{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:8px}
+.tops h3{margin:0 0 6px;font-size:18px;color:var(--pri2)}
+.trow{display:flex;gap:8px;align-items:center;padding:4px 0;border-top:2px dotted var(--bd)}
+.trow b{margin-left:auto;color:var(--pri2)}
 .row2{display:flex;gap:10px;flex-wrap:wrap}.row2 input{width:auto;flex:1;min-width:140px}
 #play .card,#target{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .srow{display:grid;grid-template-columns:1fr 1.4fr 1.2fr auto;gap:8px;padding:8px 0;border-top:2px dotted var(--bd);align-items:center}
@@ -82,6 +89,7 @@ label{font-size:14px;color:var(--mu)}
 
 <section id="home" class="hide">
   <div class="hello">🐣 <span id="hi"></span> <button id="switch" style="padding:2px 12px;font-size:14px">換人</button></div><div style="margin:8px 0"><span class="chip" id="gc"></span></div><div class="bar"><i id="bar"></i><em id="barT"></em></div>
+  <div class="card"><b style="font-size:20px;color:var(--pri2)">🏆 光榮榜</b><div class="tops"><div><h3>⚡ 速度前三名</h3><div id="topSpeed">載入中…</div></div><div><h3>🚀 級別前三名</h3><div id="topLevel">載入中…</div></div></div></div>
   <div class="grid" id="grid"></div>
   <div class="card"><b style="font-size:20px;color:var(--pri2)">🎁 我的禮物櫃</b> <small style="color:var(--mu)">每過一關，就能得到一個小禮物！</small><div class="shelf" id="shelf"></div></div>
 </section>
@@ -105,11 +113,18 @@ label{font-size:14px;color:var(--mu)}
     <div style="margin-top:10px"><button class="p" id="save">儲存本級</button> <button id="reset">還原預設</button> <span id="amsg" style="color:var(--ok)"></span></div>
   </div>
   <div class="card"><b>學生進度</b> <button id="refresh" style="padding:2px 10px">重新整理</button> <select id="clsF" style="width:auto;display:inline-block;padding:2px 10px"><option value="">全部班別</option></select><div id="stu" style="margin-top:8px"></div></div>
+  <div class="card"><b>🔍 常錯字分析</b>
+    <p style="color:var(--mu);margin:4px 0">統計學生最常打錯的字，並分成「聲母、韻母、標點符號」等類型，方便針對練習。只計算新版上線後的練習。</p>
+    <div class="row2"><select id="eC" style="width:auto;flex:none"><option value="">全部班別</option></select><select id="eK" style="width:auto;flex:none"><option value="">全部類型</option></select><button class="p" id="eGo">重新分析</button></div>
+    <div id="eMsg" style="color:var(--mu);margin:8px 0"></div>
+    <div id="eCat"></div>
+    <div id="eTop" style="margin-top:8px"></div>
+  </div>
 </section>
 </main>
 <script>
 // 後端網址由老師的專屬連結（?api=...）提供，只接受 Google Apps Script 網址
-const EXPECT="1.1";
+const EXPECT="1.3";
 const GAS=/^https:\/\/script\.google\.com\/(a\/[\w.-]+\/)?macros\/s\/[\w-]+\/exec$/;
 const API=(()=>{try{
   const a=new URLSearchParams(location.search).get("api");
@@ -161,7 +176,24 @@ function confetti(){
     e.style.left=Math.random()*100+"vw";e.style.animationDelay=Math.random()*.8+"s";document.body.appendChild(e);
     setTimeout(()=>e.remove(),3600)}
 }
-function renderGrid(){
+const MED=["🥇","🥈","🥉"];
+function fillTop(id,arr,unit){
+  const box=$(id);box.textContent="";
+  if(!arr||!arr.length){box.textContent="還沒有人上榜，快來挑戰！";return}
+  arr.forEach((x,i)=>{
+    const d=document.createElement("div");d.className="trow";
+    const a=document.createElement("span");a.textContent=MED[i];
+    const n=document.createElement("span");n.textContent=x.n;
+    const v=document.createElement("b");v.textContent=x.v+unit;
+    d.append(a,n,v);box.appendChild(d);
+  });
+}
+async function loadTop(){
+  try{const r=await api({action:"top"});fillTop("topSpeed",r.speed,"字/分");fillTop("topLevel",r.level,"關")}
+  catch(e){$("topSpeed").textContent=$("topLevel").textContent="暫時無法顯示"}
+}
+function renderGrid(){loadTop();renderGrid2()}
+function renderGrid2(){
   const done=Math.min(unlocked-1,10);
   $("hi").textContent=me+" 小朋友，你好！已經通過 "+done+" 關囉～";
   $("bar").style.width=done*10+"%";
@@ -215,12 +247,29 @@ function onInput(){
   paint();upd();
   if([...$("inp").value].length>=[...target()].length)finish();
 }
+/*DIFF-START*/
+// 用「編輯距離」對齊題目與學生輸入，找出真正的錯字（少打一個字不會讓後面全部算錯）
+function diffErrs(T,V){
+  const n=T.length,m=V.length,D=[];
+  for(let i=0;i<=n;i++){D[i]=new Array(m+1);D[i][0]=i}
+  for(let j=0;j<=m;j++)D[0][j]=j;
+  for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)
+    D[i][j]=Math.min(D[i-1][j-1]+(T[i-1]===V[j-1]?0:1),D[i-1][j]+1,D[i][j-1]+1);
+  const e=[];let i=n,j=m;
+  while(i>0||j>0){
+    if(i>0&&j>0&&D[i][j]===D[i-1][j-1]+(T[i-1]===V[j-1]?0:1)){if(T[i-1]!==V[j-1])e.push([T[i-1],V[j-1]]);i--;j--}
+    else if(i>0&&D[i][j]===D[i-1][j]+1){e.push([T[i-1],""]);i--}
+    else{j--}
+  }
+  return e.reverse().slice(0,60);
+}
+/*DIFF-END*/
 function finish(){
   fin=true;clearInterval(timer);$("inp").disabled=true;
   const T=[...target()],V=[...$("inp").value];let ok=0;T.forEach((c,i)=>{if(V[i]===c)ok++});
   const sec=Math.max((Date.now()-t0)/1000,1),acc=Math.round(ok/T.length*100),cpm=Math.round(ok/sec*60);
   const l=levels[cur],pass=acc>=l.acc&&cpm>=l.cpm;
-  api({action:"log",name:me,level:cur+1,sec:Math.round(sec),cpm,acc,pass}).catch(()=>{});
+  api({action:"log",name:me,level:cur+1,sec:Math.round(sec),cpm,acc,pass,errs:diffErrs(T,V)}).catch(()=>{});
   let h="正確率 "+acc+"%、速度 "+cpm+" 字/分。<br>";
   $("next").classList.add("hide");
   if(pass){
@@ -275,7 +324,7 @@ function loadEdit(){const l=levels[editIdx];$("alv").textContent=editIdx+1;$("at
 $("tBtn").onclick=async()=>{
   if(!pw){const p=prompt("請輸入老師密碼");if(!p)return;
     try{const r=await api({action:"check",pw:p});if(!r.ok){alert("密碼錯誤");return}pw=p;if(r.version&&r.version!==EXPECT)alert("提醒：你的後端 Code.gs 版本（"+r.version+"）和網頁需要的版本（"+EXPECT+"）不同，請到設定說明頁面更新。")}catch(e){alert("無法連線到後端，請確認連結中有老師的後端網址（?api=...）");return}}
-  editIdx=0;loadEdit();show("admin");loadStudents();
+  editIdx=0;loadEdit();show("admin");loadStudents();loadErr();
 };
 $("save").onclick=async()=>{
   const t=$("atext").value.trim();if(!t){$("amsg").textContent="請輸入文字";return}
@@ -306,11 +355,89 @@ async function loadStudents(){
     const keep=$("clsF").value;
     $("clsF").innerHTML='<option value="">全部班別</option>'+cs.map(c=>"<option>"+c+"</option>").join("");
     if(cs.includes(keep))$("clsF").value=keep;
+    const ek=$("eC").value;$("eC").innerHTML='<option value="">全部班別</option>'+cs.map(c=>"<option>"+c+"</option>").join("");if(cs.includes(ek))$("eC").value=ek;
     renderStu();
   }catch(e){box.textContent="讀取失敗"}
 }
 $("clsF").onchange=renderStu;
 $("refresh").onclick=loadStudents;
+
+
+/*ERR-START*/
+// ---- 常錯字分析 ----
+const CATS=["聲母不同","韻母不同","聲母韻母都不同","聲調不同","同音字選錯","標點符號","漏打","其他","未分類"];
+const PUNCT=/[\p{P}\p{S}]/u, CJK=/[㐀-鿿]/;
+let PYP=null,pyTried=false,lastPairs=[];
+function loadPY(){
+  return new Promise(res=>{
+    if(window.pinyinPro)return res(window.pinyinPro);
+    if(pyTried)return res(null);
+    pyTried=true;
+    const s=document.createElement("script");
+    s.src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js";
+    s.onload=()=>res(window.pinyinPro||null);s.onerror=()=>res(null);
+    document.head.appendChild(s);setTimeout(()=>res(window.pinyinPro||null),8000);
+  });
+}
+function py(ch){
+  try{return{full:PYP.pinyin(ch,{toneType:"symbol"}),i:PYP.pinyin(ch,{pattern:"initial",toneType:"none"}),f:PYP.pinyin(ch,{pattern:"final",toneType:"none"})}}catch(e){return null}
+}
+function classify(e,t){
+  if(PUNCT.test(e))return "標點符號";
+  if(t==="")return "漏打";
+  if(!CJK.test(e)||!CJK.test(t))return "其他";
+  if(!PYP)return "未分類";
+  const a=py(e),b=py(t);if(!a||!b)return "其他";
+  if(a.full===b.full)return "同音字選錯";
+  if(a.i===b.i&&a.f===b.f)return "聲調不同";
+  if(a.f===b.f)return "聲母不同";
+  if(a.i===b.i)return "韻母不同";
+  return "聲母韻母都不同";
+}
+async function loadErr(){
+  $("eMsg").textContent="分析中…";$("eCat").textContent="";$("eTop").textContent="";
+  try{
+    const r=await api({action:"errStats",pw,cls:$("eC").value});
+    if(r.error){$("eMsg").textContent="讀取失敗，請重新登入後台";return}
+    PYP=await loadPY();lastPairs=r.pairs||[];renderErr(r.total||0);
+  }catch(e){$("eMsg").textContent="讀取失敗（後端可能還是舊版，請重新部署 Code.gs）"}
+}
+function renderErr(total){
+  const msg=$("eMsg"),cat=$("eCat"),top=$("eTop");cat.textContent="";top.textContent="";
+  if(!lastPairs.length){msg.textContent="還沒有錯字紀錄。學生用新版網頁練習後才會出現。";return}
+  msg.textContent="共 "+total+" 筆錯誤"+(PYP?"":"（拼音資料庫未能載入，聲母、韻母無法分類，只顯示錯字排名）");
+  const sums={};lastPairs.forEach(p=>{p.c=classify(p.e,p.t);sums[p.c]=(sums[p.c]||0)+p.n});
+  const all=lastPairs.reduce((a,p)=>a+p.n,0)||1;
+  CATS.filter(c=>sums[c]).sort((a,b)=>sums[b]-sums[a]).forEach(c=>{
+    const d=document.createElement("div");d.className="catrow";
+    const a=document.createElement("span");a.textContent=c;
+    const b=document.createElement("div");b.className="catbar";const i=document.createElement("i");i.style.width=Math.round(sums[c]/all*100)+"%";b.appendChild(i);
+    const n=document.createElement("small");n.textContent=sums[c]+" 次（"+Math.round(sums[c]/all*100)+"%）";
+    d.append(a,b,n);cat.appendChild(d);
+  });
+  const ks=$("eK"),keep=ks.value;
+  ks.innerHTML='<option value="">全部類型</option>'+CATS.filter(c=>sums[c]).map(c=>"<option>"+c+"</option>").join("");
+  if(sums[keep])ks.value=keep;
+  const f=ks.value,by={};
+  lastPairs.filter(p=>!f||p.c===f).forEach(p=>{
+    const g=by[p.e]||(by[p.e]={e:p.e,n:0,ts:[],cs:{}});
+    g.n+=p.n;g.ts.push(p);g.cs[p.c]=(g.cs[p.c]||0)+p.n;
+  });
+  const list=Object.values(by).sort((a,b)=>b.n-a.n).slice(0,10);
+  const h=document.createElement("div");h.style.cssText="font-weight:700;margin-bottom:4px";h.textContent="最常打錯的字 前 10 名"+(f?"（"+f+"）":"");top.appendChild(h);
+  list.forEach((g,i)=>{
+    const d=document.createElement("div");d.className="toprow";
+    const r=document.createElement("span");r.textContent=(i+1);
+    const c=document.createElement("span");c.className="big";c.textContent=g.e;
+    const n=document.createElement("b");n.textContent=g.n+" 次";
+    const t=document.createElement("span");t.textContent=g.ts.sort((a,b)=>b.n-a.n).slice(0,3).map(x=>"打成「"+(x.t||"（漏打）")+"」×"+x.n).join("、");
+    const ty=document.createElement("small");ty.className="ty";ty.style.color="var(--mu)";
+    ty.textContent=Object.keys(g.cs).sort((a,b)=>g.cs[b]-g.cs[a])[0];
+    d.append(r,c,n,t,ty);top.appendChild(d);
+  });
+}
+$("eGo").onclick=loadErr;$("eC").onchange=loadErr;$("eK").onchange=()=>renderErr(lastPairs.reduce((a,p)=>a+p.n,0));
+/*ERR-END*/
 
 /* 老師按鈕預設隱藏：網址加 #teacher 開啟後，此瀏覽器會記住 */
 if(/teacher/i.test(location.search+location.hash))ls("tmode","1");
